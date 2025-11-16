@@ -10,12 +10,15 @@ import Material from "./Material";
 import StudentFinder from "./StudentFinder";
 import Profile from "./Profile";
 import Marks from "./AddMarks";
+import Attendance from "./Attendance";
 import Exam from "../Exam";
+import { useTheme } from "../../context/ThemeContext";
 
 const MENU_ITEMS = [
   { id: "home", label: "Home", component: null },
   { id: "timetable", label: "Timetable", component: Timetable },
   { id: "material", label: "Material", component: Material },
+  { id: "attendance", label: "Attendance", component: Attendance },
   { id: "notice", label: "Notice", component: Notice },
   { id: "student info", label: "Student Info", component: StudentFinder },
   { id: "marks", label: "Marks", component: Marks },
@@ -27,6 +30,7 @@ const Home = () => {
   const [profileData, setProfileData] = useState(null);
   const dispatch = useDispatch();
   const userToken = localStorage.getItem("userToken");
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -49,10 +53,12 @@ const Home = () => {
 
   const getMenuItemClass = (menuId) => {
     const isSelected = selectedMenu.toLowerCase() === menuId.toLowerCase();
-    return `text-center px-6 py-3 cursor-pointer font-medium text-sm w-full rounded-md ${
+    return `text-center px-8 py-4 cursor-pointer font-semibold text-sm w-full rounded-2xl transition-all duration-300 ease-in-out transform hover:scale-105 ${
       isSelected
-        ? "bg-blue-500 text-white"
-        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+        ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-2xl scale-105 border-2 border-white/20"
+        : isDarkMode 
+          ? "bg-gray-700/80 backdrop-blur-sm text-gray-200 hover:bg-gray-600 shadow-lg border border-gray-600/50 hover:shadow-xl"
+          : "bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-white shadow-lg border border-gray-200/50 hover:shadow-xl"
     }`;
   };
 
@@ -74,25 +80,41 @@ const Home = () => {
   };
 
   return (
-    <>
+    <div className={`min-h-screen transition-all duration-500 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
+        : 'bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50'
+    }`}>
       <Navbar />
-      <div className="max-w-7xl mx-auto">
-        <ul className="flex justify-evenly items-center gap-10 w-full mx-auto my-8">
-          {MENU_ITEMS.map((item) => (
-            <li
-              key={item.id}
-              className={getMenuItemClass(item.id)}
-              onClick={() => setSelectedMenu(item.label)}
-            >
-              {item.label}
-            </li>
-          ))}
-        </ul>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className={`backdrop-blur-lg rounded-3xl shadow-2xl border p-6 mb-8 transition-all duration-300 ${
+          isDarkMode 
+            ? 'bg-gray-800/60 border-gray-700/20' 
+            : 'bg-white/60 border-white/20'
+        }`}>
+          <ul className="flex justify-center items-center gap-4 flex-wrap">
+            {MENU_ITEMS.map((item) => (
+              <li
+                key={item.id}
+                className={getMenuItemClass(item.id)}
+                onClick={() => setSelectedMenu(item.label)}
+              >
+                {item.label}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {renderContent()}
+        <div className={`backdrop-blur-lg rounded-3xl shadow-2xl border p-8 transition-all duration-300 ${
+          isDarkMode 
+            ? 'bg-gray-800/40 border-gray-700/20' 
+            : 'bg-white/40 border-white/20'
+        }`}>
+          {renderContent()}
+        </div>
       </div>
       <Toaster position="bottom-center" />
-    </>
+    </div>
   );
 };
 

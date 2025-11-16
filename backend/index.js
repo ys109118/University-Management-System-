@@ -1,14 +1,16 @@
+require('dotenv').config();
 const connectToMongo = require("./database/db");
 const express = require("express");
 const app = express();
 const path = require("path");
 connectToMongo();
-const port = 4000 || process.env.PORT;
+const port = process.env.PORT || 3001;
 var cors = require("cors");
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_API_LINK,
+    origin: [process.env.FRONTEND_API_LINK, "http://localhost:3000", "http://localhost:3002"],
+    credentials: true
   })
 );
 
@@ -31,6 +33,7 @@ app.use("/api/timetable", require("./routes/timetable.route"));
 app.use("/api/material", require("./routes/material.route"));
 app.use("/api/exam", require("./routes/exam.route"));
 app.use("/api/marks", require("./routes/marks.route"));
+app.use("/api/attendance", require("./routes/attendance.route"));
 
 app.listen(port, () => {
   console.log(`Server Listening On http://localhost:${port}`);

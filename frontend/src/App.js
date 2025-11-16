@@ -8,10 +8,11 @@ import FacultyHome from "./Screens/Faculty/Home";
 import AdminHome from "./Screens/Admin/Home";
 import ForgetPassword from "./Screens/ForgetPassword";
 import UpdatePassword from "./Screens/UpdatePassword";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const App = () => {
   return (
-    <>
+    <ThemeProvider>
       <Provider store={mystore}>
         <Router>
           <Routes>
@@ -27,7 +28,7 @@ const App = () => {
           </Routes>
         </Router>
       </Provider>
-    </>
+    </ThemeProvider>
   );
 };
 

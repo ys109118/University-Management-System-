@@ -4,6 +4,20 @@ const axiosWrapper = axios.create({
   baseURL: baseApiURL(),
 });
 
+// Request interceptor to add auth token
+axiosWrapper.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("userToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 axiosWrapper.interceptors.response.use(
   (response) => response,
   (error) => {
