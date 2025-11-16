@@ -63,8 +63,10 @@ const Home = () => {
   };
 
   const renderContent = () => {
-    if (selectedMenu === "Home" && profileData) {
-      return <Profile profileData={profileData} />;
+    if (selectedMenu === "Home") {
+      // Import and use FacultyDashboardEnhanced
+      const FacultyDashboardEnhanced = require('./FacultyDashboardEnhanced').default;
+      return <FacultyDashboardEnhanced onMenuSelect={setSelectedMenu} />;
     }
 
     const menuItem = MENU_ITEMS.find(

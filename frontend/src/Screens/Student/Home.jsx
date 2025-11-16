@@ -89,8 +89,16 @@ const Home = () => {
       );
     }
 
-    if (selectedMenu === "home" && profileData) {
-      return <Profile profileData={profileData} />;
+    if (selectedMenu === "home") {
+      // Import and use StudentDashboardEnhanced
+      const StudentDashboardEnhanced = require('./StudentDashboardEnhanced').default;
+      return <StudentDashboardEnhanced onMenuSelect={(menu) => {
+        const menuItem = MENU_ITEMS.find(item => item.label.toLowerCase() === menu.toLowerCase());
+        if (menuItem) {
+          setSelectedMenu(menuItem.id);
+          navigate(`/student?page=${menuItem.id}`);
+        }
+      }} />;
     }
 
     const MenuItem = MENU_ITEMS.find(

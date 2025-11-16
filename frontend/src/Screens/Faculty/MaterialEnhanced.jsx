@@ -1,18 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { FiUpload, FiEdit2, FiTrash2, FiBook, FiFilter, FiDownload, FiFileText } from "react-icons/fi";
+import { FiUpload, FiEdit2, FiTrash2, FiBook, FiFilter, FiDownload, FiSearch } from "react-icons/fi";
 import { HiAcademicCap, HiDocumentText, HiClipboardList } from "react-icons/hi";
 import { MdLink, MdSchool, MdAssignment } from "react-icons/md";
-import { IoMdAdd } from "react-icons/io";
-import { BiBook, BiNotepad } from "react-icons/bi";
-import Heading from "../../components/Heading";
+import { IoMdAdd, IoMdClose } from "react-icons/io";
+import { BiCategory } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
 import toast from "react-hot-toast";
 import axiosWrapper from "../../utils/AxiosWrapper";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import CustomButton from "../../components/CustomButton";
 import { useTheme } from "../../context/ThemeContext";
+
 const Material = () => {
+  const { isDarkMode } = useTheme();
   const [materials, setMaterials] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -21,6 +22,8 @@ const Material = () => {
   const [editingMaterial, setEditingMaterial] = useState(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
@@ -35,7 +38,6 @@ const Material = () => {
     branch: "",
     type: "",
   });
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchSubjects();
@@ -205,11 +207,11 @@ const Material = () => {
   const handleEdit = (material) => {
     setEditingMaterial(material);
     setFormData({
-      title: material.title || '',
-      subject: material.subject?._id || '',
-      semester: material.semester || '',
-      branch: material.branch?._id || '',
-      type: material.type || 'notes',
+      title: material.title,
+      subject: material.subject._id,
+      semester: material.semester,
+      branch: material.branch._id,
+      type: material.type,
     });
     setShowModal(true);
   };
@@ -232,14 +234,12 @@ const Material = () => {
     }
   };
 
-  const { isDarkMode } = useTheme();
-
   const getTypeIcon = (type) => {
     switch (type) {
-      case 'notes': return <BiNotepad className="text-lg" />;
+      case 'notes': return <FiBook className="text-lg" />;
       case 'assignment': return <MdAssignment className="text-lg" />;
       case 'syllabus': return <HiDocumentText className="text-lg" />;
-      default: return <FiFileText className="text-lg" />;
+      default: return <HiClipboardList className="text-lg" />;
     }
   };
 
@@ -248,34 +248,57 @@ const Material = () => {
       case 'notes': return isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600';
       case 'assignment': return isDarkMode ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600';
       case 'syllabus': return isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600';
-      default: return isDarkMode ? 'bg-gray-500/20 text-gray-400' : 'bg-gray-100 text-gray-600';
+      default: return isDarkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600';
     }
   };
+
+  const filteredMaterials = materials.filter(material =>
+    material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    material.subject.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="w-full mx-auto flex justify-center items-start flex-col mb-10">
       {/* Header Section */}
-      <div className="flex justify-between items-center w-full mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center w-full mb-8 gap-4">
         <div className="flex items-center gap-4">
           <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
             <FiBook className="text-3xl" />
           </div>
           <div>
             <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-              Material Management
+              Study Materials
             </h1>
             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              Upload and manage study materials
+              Manage and organize educational resources
             </p>
           </div>
         </div>
-        <CustomButton 
-          onClick={() => setShowModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-        >
-          <IoMdAdd className="text-xl mr-2" />
-          Add Material
-        </CustomButton>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600') : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700')}`}
+            >
+              <HiClipboardList className="text-xl" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all duration-200 ${viewMode === 'list' ? (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600') : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700')}`}
+            >
+              <FiFilter className="text-xl" />
+            </button>
+          </div>
+          
+          <CustomButton 
+            onClick={() => setShowModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          >
+            <IoMdAdd className="text-xl mr-2" />
+            Add Material
+          </CustomButton>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -298,8 +321,8 @@ const Material = () => {
               <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Notes</p>
               <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{materials.filter(m => m.type === 'notes').length}</p>
             </div>
-            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
-              <BiNotepad className="text-xl" />
+            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
+              <HiDocumentText className="text-xl" />
             </div>
           </div>
         </div>
@@ -319,33 +342,40 @@ const Material = () => {
         <div className={`p-6 rounded-2xl border transition-all duration-300 ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'} shadow-lg hover:shadow-xl`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Syllabus</p>
-              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{materials.filter(m => m.type === 'syllabus').length}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Subjects</p>
+              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{subjects.length}</p>
             </div>
-            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'}`}>
-              <HiDocumentText className="text-xl" />
+            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+              <HiAcademicCap className="text-xl" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className={`w-full mb-8 p-6 rounded-2xl border ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'} shadow-lg`}>
-        <div className="flex items-center gap-3 mb-6">
-          <FiFilter className={`text-xl ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-          <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Filter Materials</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <FiBook className="inline mr-2" />
-              Subject
-            </label>
+      {/* Search and Filters */}
+      <div className={`w-full p-6 rounded-2xl border mb-8 ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'} shadow-lg`}>
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search Bar */}
+          <div className="flex-1">
+            <div className="relative">
+              <FiSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+              <input
+                type="text"
+                placeholder="Search materials..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
+              />
+            </div>
+          </div>
+          
+          {/* Filter Dropdowns */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <select
               name="subject"
               value={filters.subject}
               onChange={handleFilterChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
+              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
             >
               <option value="">All Subjects</option>
               {subjects.map((subject) => (
@@ -354,18 +384,12 @@ const Material = () => {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <HiAcademicCap className="inline mr-2" />
-              Branch
-            </label>
             <select
               name="branch"
               value={filters.branch}
               onChange={handleFilterChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
+              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
             >
               <option value="">All Branches</option>
               {branches.map((branch) => (
@@ -374,18 +398,12 @@ const Material = () => {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <MdSchool className="inline mr-2" />
-              Semester
-            </label>
             <select
               name="semester"
               value={filters.semester}
               onChange={handleFilterChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
+              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
             >
               <option value="">All Semesters</option>
               {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
@@ -394,18 +412,12 @@ const Material = () => {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <FiFileText className="inline mr-2" />
-              Type
-            </label>
             <select
               name="type"
               value={filters.type}
               onChange={handleFilterChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
+              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
             >
               <option value="">All Types</option>
               <option value="notes">Notes</option>
@@ -417,22 +429,78 @@ const Material = () => {
         </div>
       </div>
 
-      {/* Materials Grid/Table */}
-      <div className={`w-full rounded-2xl border overflow-hidden shadow-xl ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'}`}>
-        {materials.length === 0 ? (
-          <div className="text-center py-16">
-            <FiBook className={`mx-auto text-6xl mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-            <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>No Materials Found</h3>
-            <p className={`${isDarkMode ? 'text-gray-500' : 'text-gray-500'} mb-6`}>Get started by uploading your first material</p>
-            <CustomButton 
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl"
-            >
-              <IoMdAdd className="text-lg mr-2" />
-              Add First Material
-            </CustomButton>
-          </div>
-        ) : (
+      {/* Materials Display */}
+      {filteredMaterials.length === 0 ? (
+        <div className={`w-full rounded-2xl border p-16 text-center ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'} shadow-lg`}>
+          <FiBook className={`mx-auto text-6xl mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+          <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>No Materials Found</h3>
+          <p className={`${isDarkMode ? 'text-gray-500' : 'text-gray-500'} mb-6`}>Start building your resource library</p>
+          <CustomButton 
+            onClick={() => setShowModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl"
+          >
+            <IoMdAdd className="text-lg mr-2" />
+            Add First Material
+          </CustomButton>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+          {filteredMaterials.map((material) => (
+            <div key={material._id} className={`p-6 rounded-2xl border transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm hover:bg-gray-800/80' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm hover:bg-white'} shadow-lg hover:shadow-2xl group`}>
+              <div className="flex items-start justify-between mb-4">
+                <div className={`p-3 rounded-xl ${getTypeColor(material.type)}`}>
+                  {getTypeIcon(material.type)}
+                </div>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <button
+                    onClick={() => handleEdit(material)}
+                    className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  >
+                    <FiEdit2 className="text-sm" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedMaterialId(material._id);
+                      setIsDeleteConfirmOpen(true);
+                    }}
+                    className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-200"
+                  >
+                    <FiTrash2 className="text-sm" />
+                  </button>
+                </div>
+              </div>
+              
+              <h3 className={`font-semibold text-lg mb-2 line-clamp-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                {material.title}
+              </h3>
+              
+              <div className="space-y-2 mb-4">
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <MdSchool className="inline mr-1" />
+                  {material.subject.name}
+                </p>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <HiAcademicCap className="inline mr-1" />
+                  {material.branch.name} • Sem {material.semester}
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(material.type)}`}>
+                  {material.type}
+                </span>
+                <button
+                  onClick={() => window.open(`${process.env.REACT_APP_MEDIA_LINK}/${material.file}`)}
+                  className={`p-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+                >
+                  <FiDownload className="text-lg" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={`w-full rounded-2xl border overflow-hidden shadow-xl ${isDarkMode ? 'bg-gray-800/60 border-gray-700/50 backdrop-blur-sm' : 'bg-white/80 border-gray-200/50 backdrop-blur-sm'}`}>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -441,19 +509,16 @@ const Material = () => {
                     <FiDownload className="inline mr-2" />File
                   </th>
                   <th className={`py-4 px-6 text-left font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    <FiFileText className="inline mr-2" />Title
+                    <FiBook className="inline mr-2" />Title
                   </th>
                   <th className={`py-4 px-6 text-left font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    <FiBook className="inline mr-2" />Subject
+                    <MdSchool className="inline mr-2" />Subject
                   </th>
                   <th className={`py-4 px-6 text-left font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    <MdSchool className="inline mr-2" />Semester
+                    <HiAcademicCap className="inline mr-2" />Details
                   </th>
                   <th className={`py-4 px-6 text-left font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    <HiAcademicCap className="inline mr-2" />Branch
-                  </th>
-                  <th className={`py-4 px-6 text-left font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                    Type
+                    <BiCategory className="inline mr-2" />Type
                   </th>
                   <th className={`py-4 px-6 text-center font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                     Actions
@@ -461,57 +526,48 @@ const Material = () => {
                 </tr>
               </thead>
               <tbody>
-                {materials.map((material) => (
+                {filteredMaterials.map((material) => (
                   <tr key={material._id} className={`border-b transition-all duration-200 ${isDarkMode ? 'border-gray-700/50 hover:bg-gray-700/30' : 'border-gray-200/50 hover:bg-gray-50/50'}`}>
                     <td className="py-4 px-6">
-                      <CustomButton
-                        onClick={() => {
-                          window.open(
-                            `${process.env.REACT_APP_MEDIA_LINK}/${material.file}`
-                          );
-                        }}
+                      <button
+                        onClick={() => window.open(`${process.env.REACT_APP_MEDIA_LINK}/${material.file}`)}
                         className={`inline-flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${isDarkMode ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
                       >
                         <FiDownload className="text-lg" />
-                      </CustomButton>
+                      </button>
                     </td>
                     <td className={`py-4 px-6 font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                       {material.title}
                     </td>
                     <td className={`py-4 px-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {material.subject?.name || 'N/A'}
+                      {material.subject.name}
                     </td>
                     <td className={`py-4 px-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Semester {material.semester}
-                    </td>
-                    <td className={`py-4 px-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {material.branch?.name || 'N/A'}
+                      {material.branch.name} • Sem {material.semester}
                     </td>
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(material.type)}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(material.type)}`}>
                         {getTypeIcon(material.type)}
-                        <span className="ml-2 capitalize">{material.type}</span>
+                        <span className="ml-1">{material.type}</span>
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex justify-center gap-3">
-                        <CustomButton
-                          variant="secondary"
+                        <button
                           onClick={() => handleEdit(material)}
-                          className="p-2 rounded-lg hover:scale-110 transition-all duration-200"
+                          className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                         >
                           <FiEdit2 className="text-lg" />
-                        </CustomButton>
-                        <CustomButton
-                          variant="danger"
+                        </button>
+                        <button
                           onClick={() => {
                             setSelectedMaterialId(material._id);
                             setIsDeleteConfirmOpen(true);
                           }}
-                          className="p-2 rounded-lg hover:scale-110 transition-all duration-200"
+                          className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-200 hover:scale-110"
                         >
                           <FiTrash2 className="text-lg" />
-                        </CustomButton>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -519,8 +575,8 @@ const Material = () => {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Add/Edit Material Modal */}
       {showModal && (
@@ -535,21 +591,21 @@ const Material = () => {
                   {editingMaterial ? "Edit Material" : "Add New Material"}
                 </h2>
               </div>
-              <CustomButton
+              <button
                 onClick={() => {
                   setShowModal(false);
                   resetForm();
                 }}
                 className={`p-2 rounded-xl transition-all duration-200 ${isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}`}
               >
-                <AiOutlineClose size={24} />
-              </CustomButton>
+                <IoMdClose className="text-2xl" />
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  <FiFileText className="inline mr-2" />
+                <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <FiBook className="inline mr-2" />
                   Material Title
                 </label>
                 <input
@@ -558,15 +614,15 @@ const Material = () => {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="Enter material title..."
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    <FiBook className="inline mr-2" />
+                  <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <MdSchool className="inline mr-2" />
                     Subject
                   </label>
                   <select
@@ -586,7 +642,7 @@ const Material = () => {
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     <HiAcademicCap className="inline mr-2" />
                     Branch
                   </label>
@@ -607,8 +663,8 @@ const Material = () => {
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    <MdSchool className="inline mr-2" />
+                  <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <HiClipboardList className="inline mr-2" />
                     Semester
                   </label>
                   <select
@@ -628,8 +684,9 @@ const Material = () => {
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Material Type
+                  <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <BiCategory className="inline mr-2" />
+                    Type
                   </label>
                   <select
                     name="type"
@@ -638,16 +695,16 @@ const Material = () => {
                     className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500/20' : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500/20'}`}
                     required
                   >
-                    <option value="notes">📝 Notes</option>
-                    <option value="assignment">📋 Assignment</option>
-                    <option value="syllabus">📚 Syllabus</option>
+                    <option value="notes">📚 Notes</option>
+                    <option value="assignment">📝 Assignment</option>
+                    <option value="syllabus">📋 Syllabus</option>
                     <option value="other">📄 Other</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-semibold mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <label className={`block mb-3 text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   <FiUpload className="inline mr-2" />
                   Material File
                 </label>
@@ -659,30 +716,27 @@ const Material = () => {
                     required={!editingMaterial}
                   />
                   <div className="text-center">
-                    {file ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <FiFileText className={`text-3xl ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                        <div>
-                          <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>{file.name}</p>
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Click to change file</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <FiUpload className={`mx-auto text-4xl mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                        <p className={`text-lg font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          Click to upload or drag and drop
-                        </p>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                          PDF, DOC, DOCX, PPT, PPTX up to 50MB
-                        </p>
-                      </>
-                    )}
+                    <FiUpload className={`mx-auto text-4xl mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <p className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {file ? file.name : 'Drop your file here or click to browse'}
+                    </p>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      PDF, DOC, DOCX, PPT, PPTX up to 50MB
+                    </p>
                   </div>
+                  {file && (
+                    <button
+                      type="button"
+                      onClick={() => setFile(null)}
+                      className="absolute top-4 right-4 p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all duration-200"
+                    >
+                      <IoMdClose className="text-lg" />
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <CustomButton
                   onClick={() => {
                     setShowModal(false);
@@ -696,19 +750,26 @@ const Material = () => {
                 <CustomButton 
                   type="submit" 
                   disabled={dataLoading}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl"
                 >
-                  {dataLoading
-                    ? "Processing..."
-                    : editingMaterial
-                    ? "Update Material"
-                    : "Add Material"}
+                  {dataLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <FiUpload className="mr-2" />
+                      {editingMaterial ? "Update Material" : "Add Material"}
+                    </div>
+                  )}
                 </CustomButton>
               </div>
             </form>
           </div>
         </div>
       )}
+      
       <DeleteConfirm
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}
