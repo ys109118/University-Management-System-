@@ -9,7 +9,7 @@ var cors = require("cors");
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_API_LINK, "http://localhost:3000", "http://localhost:3002"],
+    origin: [process.env.FRONTEND_API_LINK, "http://localhost:3000", "http://localhost:3002", "https://university-management-system-7ae5.vercel.app"],
     credentials: true
   })
 );
