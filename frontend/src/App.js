@@ -9,6 +9,7 @@ import AdminHome from "./Screens/Admin/Home";
 import ForgetPassword from "./Screens/ForgetPassword";
 import UpdatePassword from "./Screens/UpdatePassword";
 import { ThemeProvider } from "./context/ThemeContext";
+import Chatbot from "./components/Chatbot";
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
             <Route path="faculty" element={<FacultyHome />} />
             <Route path="admin" element={<AdminHome />} />
           </Routes>
+          <Chatbot />
         </Router>
       </Provider>
     </ThemeProvider>
