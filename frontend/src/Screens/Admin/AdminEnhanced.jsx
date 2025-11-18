@@ -9,6 +9,7 @@ import Subject from './Subject';
 import Notice from '../Notice';
 import Exam from '../Exam';
 import Profile from './Profile';
+import HostelManagement from './HostelManagement';
 import { toast, Toaster } from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../../redux/actions';
@@ -58,6 +59,8 @@ const AdminEnhanced = () => {
         return <Exam />;
       case 'admins':
         return profileData ? <Profile profileData={profileData} /> : <div>Loading...</div>;
+      case 'hostel':
+        return <HostelManagement />;
       default:
         return <AdminDashboardEnhanced onMenuSelect={setSelectedMenu} />;
     }

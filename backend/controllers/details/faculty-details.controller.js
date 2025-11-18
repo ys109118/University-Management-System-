@@ -203,13 +203,34 @@ const sendFacultyResetPasswordEmail = async (req, res) => {
     }
 
     const user = await facultyDetails.findOne({ email });
+
+    // Always return success to prevent email enumeration
     if (!user) {
-      return ApiResponse.notFound("No Faculty Found").send(res);
+      return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
     }
 
-    const resetTkn = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "10m",
+    // Rate limiting check for this specific user
+    const recentReset = await resetToken.findOne({
+      type: "FacultyDetails",
+      userId: user._id,
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // 5 minutes
     });
+    
+    if (recentReset) {
+      return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
+    }
+
+    const resetTkn = jwt.sign(
+      {
+        _id: user._id,
+        email: user.email,
+        timestamp: Date.now()
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "15m",
+      }
+    );
 
     await resetToken.deleteMany({ type: "FacultyDetails", userId: user._id });
 
@@ -221,9 +242,9 @@ const sendFacultyResetPasswordEmail = async (req, res) => {
 
     await sendResetMail(user.email, resetId._id, "faculty");
 
-    return ApiResponse.success(null, "Reset Mail Sent Successfully").send(res);
+    return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
   } catch (error) {
-    console.error("Forgot Password Error: ", error);
+    console.error("Reset Password Error: ", error);
     return ApiResponse.internalServerError().send(res);
   }
 };
@@ -234,37 +255,53 @@ const updateFacultyPasswordHandler = async (req, res) => {
     const { password } = req.body;
 
     if (!resetId || !password) {
-      return ApiResponse.badRequest("Password and ResetId are required").send(
-        res
-      );
+      return ApiResponse.badRequest("Password and ResetId are required").send(res);
+    }
+
+    // Password strength validation
+    if (password.length < 8) {
+      return ApiResponse.badRequest("Password must be at least 8 characters long").send(res);
+    }
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      return ApiResponse.badRequest("Password must contain uppercase, lowercase, and number").send(res);
     }
 
     const resetTkn = await resetToken.findById(resetId);
     if (!resetTkn) {
-      return ApiResponse.notFound("No Reset Request Found").send(res);
+      return ApiResponse.badRequest("Invalid or expired reset link").send(res);
     }
 
-    const verifyToken = jwt.verify(resetTkn.resetToken, process.env.JWT_SECRET);
-    if (!verifyToken) {
-      return ApiResponse.unauthorized("Token Expired or Invalid").send(res);
+    let verifyToken;
+    try {
+      verifyToken = jwt.verify(resetTkn.resetToken, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      await resetToken.findByIdAndDelete(resetId);
+      return ApiResponse.badRequest("Reset link has expired").send(res);
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Verify user still exists
+    const user = await facultyDetails.findById(verifyToken._id);
+    if (!user) {
+      return ApiResponse.notFound("User not found").send(res);
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     await facultyDetails.findByIdAndUpdate(verifyToken._id, {
       password: hashedPassword,
     });
 
+    // Clean up all reset tokens for this user
     await resetToken.deleteMany({
       type: "FacultyDetails",
       userId: verifyToken._id,
     });
 
-    return ApiResponse.success(null, "Password Updated Successfully!").send(
-      res
-    );
+    return ApiResponse.success(null, "Password updated successfully!").send(res);
   } catch (error) {
-    console.error("Password Update Error: ", error);
+    console.error("Update Password Error: ", error);
     return ApiResponse.internalServerError().send(res);
   }
 };

@@ -25,7 +25,12 @@ const loginStudentController = async (req, res) => {
       expiresIn: "1h",
     });
 
-    return ApiResponse.success({ token }, "Login successful").send(res);
+    const userData = await studentDetails
+      .findById(user._id)
+      .select("-password -__v")
+      .populate("branchId");
+
+    return ApiResponse.success({ token, user: userData }, "Login successful").send(res);
   } catch (error) {
     console.error("Login Error: ", error);
     return ApiResponse.internalServerError().send(res);
@@ -215,16 +220,31 @@ const sendForgetPasswordEmail = async (req, res) => {
 
     const user = await studentDetails.findOne({ email });
 
+    // Always return success to prevent email enumeration
     if (!user) {
-      return ApiResponse.notFound("No Student Found").send(res);
+      return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
     }
+
+    // Rate limiting check for this specific user
+    const recentReset = await resetToken.findOne({
+      type: "StudentDetails",
+      userId: user._id,
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // 5 minutes
+    });
+    
+    if (recentReset) {
+      return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
+    }
+
     const resetTkn = jwt.sign(
       {
         _id: user._id,
+        email: user.email,
+        timestamp: Date.now()
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "10m",
+        expiresIn: "15m",
       }
     );
 
@@ -241,9 +261,9 @@ const sendForgetPasswordEmail = async (req, res) => {
 
     await sendResetMail(user.email, resetId._id, "student");
 
-    return ApiResponse.success(null, "Reset Mail Send Successful").send(res);
+    return ApiResponse.success(null, "If email exists, reset link has been sent").send(res);
   } catch (error) {
-    console.error("Send Reset Mail Error: ", error);
+    console.error("Reset Password Error: ", error);
     return ApiResponse.internalServerError().send(res);
   }
 };
@@ -252,40 +272,54 @@ const updatePasswordHandler = async (req, res) => {
   try {
     const { resetId } = req.params;
     const { password } = req.body;
+    
     if (!resetId || !password) {
-      return ApiResponse.badRequest("Password and ResetId is Required").send(
-        res
-      );
+      return ApiResponse.badRequest("Password and ResetId is Required").send(res);
+    }
+
+    // Password strength validation
+    if (password.length < 8) {
+      return ApiResponse.badRequest("Password must be at least 8 characters long").send(res);
+    }
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      return ApiResponse.badRequest("Password must contain uppercase, lowercase, and number").send(res);
     }
 
     const resetTkn = await resetToken.findById(resetId);
 
     if (!resetTkn) {
-      return ApiResponse.notFound("No Reset Request Found").send(res);
+      return ApiResponse.badRequest("Invalid or expired reset link").send(res);
     }
 
-    const verifyToken = await jwt.verify(
-      resetTkn.resetToken,
-      process.env.JWT_SECRET
-    );
-
-    if (!verifyToken) {
-      return ApiResponse.notFound("Token Expired").send(res);
+    let verifyToken;
+    try {
+      verifyToken = jwt.verify(resetTkn.resetToken, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      await resetToken.findByIdAndDelete(resetId);
+      return ApiResponse.badRequest("Reset link has expired").send(res);
     }
 
-    const salt = await bcrypt.genSalt(10);
+    // Verify user still exists
+    const user = await studentDetails.findById(verifyToken._id);
+    if (!user) {
+      return ApiResponse.notFound("User not found").send(res);
+    }
+
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await studentDetails.findByIdAndUpdate(verifyToken._id, {
       password: hashedPassword,
     });
 
+    // Clean up all reset tokens for this user
     await resetToken.deleteMany({
       type: "StudentDetails",
       userId: verifyToken._id,
     });
 
-    return ApiResponse.success(null, "Password Updated!").send(res);
+    return ApiResponse.success(null, "Password updated successfully!").send(res);
   } catch (error) {
     console.error("Update Password Error: ", error);
     return ApiResponse.internalServerError().send(res);

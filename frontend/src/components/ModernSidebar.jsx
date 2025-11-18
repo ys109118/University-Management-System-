@@ -21,7 +21,7 @@ import {
   FiLogOut,
   FiUser
 } from 'react-icons/fi';
-import { HiAcademicCap } from 'react-icons/hi';
+import { HiAcademicCap, HiOutlineHome } from 'react-icons/hi';
 import { MdSchool, MdDashboard } from 'react-icons/md';
 
 const ModernSidebar = ({ selectedMenu, onMenuSelect, userRole = 'admin' }) => {
@@ -66,6 +66,7 @@ const ModernSidebar = ({ selectedMenu, onMenuSelect, userRole = 'admin' }) => {
         items: [
           { id: 'notices', label: 'Notices', icon: FiBell, color: 'text-yellow-500', badge: notifications.notices },
           { id: 'exams', label: 'Exams', icon: FiClipboard, color: 'text-red-500', badge: notifications.exams },
+          { id: 'hostel', label: 'Hostel', icon: HiOutlineHome, color: 'text-teal-500' },
           { id: 'admins', label: 'Admins', icon: FiShield, color: 'text-gray-500' }
         ]
       }
@@ -115,7 +116,8 @@ const ModernSidebar = ({ selectedMenu, onMenuSelect, userRole = 'admin' }) => {
         title: 'Information',
         items: [
           { id: 'notice', label: 'Notice', icon: FiBell, color: 'text-yellow-500', badge: notifications.notices },
-          { id: 'exam', label: 'Exam', icon: FiClipboard, color: 'text-indigo-500', badge: notifications.exams }
+          { id: 'exam', label: 'Exam', icon: FiClipboard, color: 'text-indigo-500', badge: notifications.exams },
+          { id: 'hostel', label: 'Hostel', icon: HiOutlineHome, color: 'text-teal-500' }
         ]
       }
     }
