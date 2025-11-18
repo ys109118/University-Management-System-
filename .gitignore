@@ -43,6 +43,6 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Media uploads (if any)
-uploads/
-media/
+# Media uploads
+backend/media/*
+!backend/media/.keep

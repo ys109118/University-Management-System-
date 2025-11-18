@@ -25,7 +25,12 @@ const loginStudentController = async (req, res) => {
       expiresIn: "1h",
     });
 
-    return ApiResponse.success({ token }, "Login successful").send(res);
+    const userData = await studentDetails
+      .findById(user._id)
+      .select("-password -__v")
+      .populate("branchId");
+
+    return ApiResponse.success({ token, user: userData }, "Login successful").send(res);
   } catch (error) {
     console.error("Login Error: ", error);
     return ApiResponse.internalServerError().send(res);

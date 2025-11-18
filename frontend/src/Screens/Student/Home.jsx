@@ -11,6 +11,7 @@ import Profile from "./Profile";
 import Exam from "../Exam";
 import ViewMarks from "./ViewMarks";
 import Attendance from "./Attendance";
+import HostelServices from "./HostelServices";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -19,6 +20,7 @@ const MENU_ITEMS = [
   { id: "timetable", label: "Timetable", component: Timetable },
   { id: "material", label: "Material", component: Material },
   { id: "attendance", label: "Attendance", component: Attendance },
+  { id: "hostel", label: "Hostel", component: HostelServices },
   { id: "notice", label: "Notice", component: Notice },
   { id: "exam", label: "Exam", component: Exam },
   { id: "marks", label: "Marks", component: ViewMarks },

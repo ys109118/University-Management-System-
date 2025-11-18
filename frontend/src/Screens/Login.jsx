@@ -51,9 +51,10 @@ const Login = () => {
         formData
       );
 
-      const { token } = response.data.data;
+      const { token, user } = response.data.data;
       localStorage.setItem("userToken", token);
       localStorage.setItem("userType", selected);
+      localStorage.setItem("userData", JSON.stringify(user));
       if (rememberMe) {
         localStorage.setItem("rememberMe", "true");
       }

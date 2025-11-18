@@ -9,6 +9,7 @@ import Notice from '../Notice';
 import Exam from '../Exam';
 import ViewMarks from './ViewMarks';
 import Profile from './Profile';
+import HostelServices from './HostelServices';
 import { toast, Toaster } from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../../redux/actions';
@@ -68,6 +69,8 @@ const StudentEnhanced = () => {
         return <Exam />;
       case 'marks':
         return <ViewMarks />;
+      case 'hostel':
+        return <HostelServices />;
       default:
         return <StudentDashboardEnhanced onMenuSelect={setSelectedMenu} />;
     }

@@ -73,6 +73,7 @@ app.use("/api/exam", require("./routes/exam.route"));
 app.use("/api/marks", require("./routes/marks.route"));
 app.use("/api/attendance", require("./routes/attendance.route"));
 app.use("/api/chatbot", require("./routes/chatbot.route"));
+app.use("/api/hostel", require("./routes/hostel.route"));
 
 app.listen(port, () => {
   console.log(`Server Listening On http://localhost:${port}`);

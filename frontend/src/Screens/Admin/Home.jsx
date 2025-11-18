@@ -12,8 +12,10 @@ import { setUserData } from "../../redux/actions";
 import axiosWrapper from "../../utils/AxiosWrapper";
 import Profile from "./Profile";
 import Exam from "../Exam";
+import HostelManagement from "./HostelManagement";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FiUsers, FiUserCheck, FiBook, FiBell, FiSettings, FiBarChart2, FiShield, FiHome, FiGitBranch } from "react-icons/fi";
+import { HiHome } from "react-icons/hi";
 import { useTheme } from "../../context/ThemeContext";
 
 const MENU_ITEMS = [
@@ -22,6 +24,7 @@ const MENU_ITEMS = [
   { id: "faculty", label: "Faculty", component: Faculty, icon: FiUserCheck },
   { id: "branch", label: "Branches", component: Branch, icon: FiGitBranch },
   { id: "subjects", label: "Subjects", component: Subjects, icon: FiBook },
+  { id: "hostel", label: "Hostels", component: HostelManagement, icon: HiHome },
   { id: "notice", label: "Notices", component: Notice, icon: FiBell },
   { id: "exam", label: "Exams", component: Exam, icon: FiBarChart2 },
   { id: "admin", label: "Admins", component: Admin, icon: FiShield },
@@ -137,22 +140,41 @@ const AdminDashboard = ({ onNavigate }) => {
       {/* Quick Actions */}
       <div className="bg-white/40 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <button 
+            onClick={() => onNavigate('student')}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
             <FiUsers className="text-2xl mb-2 mx-auto" />
-            <span className="text-sm font-medium">Add Student</span>
+            <span className="text-sm font-medium">Manage Students</span>
           </button>
-          <button className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+          <button 
+            onClick={() => onNavigate('faculty')}
+            className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
             <FiUserCheck className="text-2xl mb-2 mx-auto" />
-            <span className="text-sm font-medium">Add Faculty</span>
+            <span className="text-sm font-medium">Manage Faculty</span>
           </button>
-          <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+          <button 
+            onClick={() => onNavigate('hostel')}
+            className="bg-gradient-to-r from-pink-500 to-pink-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
+            <HiHome className="text-2xl mb-2 mx-auto" />
+            <span className="text-sm font-medium">Manage Hostels</span>
+          </button>
+          <button 
+            onClick={() => onNavigate('subjects')}
+            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
             <FiBook className="text-2xl mb-2 mx-auto" />
-            <span className="text-sm font-medium">Add Subject</span>
+            <span className="text-sm font-medium">Manage Subjects</span>
           </button>
-          <button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+          <button 
+            onClick={() => onNavigate('notice')}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+          >
             <FiBell className="text-2xl mb-2 mx-auto" />
-            <span className="text-sm font-medium">Send Notice</span>
+            <span className="text-sm font-medium">Manage Notices</span>
           </button>
         </div>
       </div>
@@ -253,7 +275,7 @@ const Home = () => {
     }
 
     if (selectedMenu === "dashboard") {
-      return <AdminDashboard />;
+      return <AdminDashboard onNavigate={handleMenuClick} />;
     }
 
     const MenuItem = MENU_ITEMS.find((item) => item.id === selectedMenu)?.component;
@@ -311,10 +333,11 @@ const Home = () => {
         position="top-right"
         toastOptions={{
           style: {
-            background: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.1)',
+            background: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(10px)',
-            color: isDarkMode ? '#fff' : '#fff',
-            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)'}`,
+            color: isDarkMode ? '#fff' : '#000',
+            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
           },
         }}
       />

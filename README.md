@@ -20,6 +20,7 @@ A comprehensive MERN stack-based College Management System that helps manage aca
 - Handle subject/course management by semester and branch
 - Generate and manage notices for students and faculty
 - Upload and manage timetables by branch and semester
+- **Hostel Management** - Manage hostels, rooms, allocations, and complaints
 - Profile management and password updates
 
 ### Faculty Features
@@ -39,6 +40,7 @@ A comprehensive MERN stack-based College Management System that helps manage aca
 - Access study materials filtered by subject and type
 - View class timetables with download option
 - Access notices and announcements
+- **Hostel Services** - View room allocation and submit complaints
 - Update profile information
 - Password management and reset functionality
 
@@ -233,9 +235,9 @@ college-management-system/
 
 ## For Any Doubt Feel Free To Contact Me 🚀
 
-- [My Website](http://krishjotaniya.netlify.app/)
-- [Linkedin](https://www.linkedin.com/in/krishjotaniya/)
-- [krishjotaniya71@gmail.com](mailto:krishjotaniya71@gmail.com)
+**Yash Sharma**
+- Email: [ys109118@gmail.com](mailto:ys109118@gmail.com)
+- [Linkedin](https://www.linkedin.com/in/yash-sharma-99282a251/)
 
 ## Contributing
 

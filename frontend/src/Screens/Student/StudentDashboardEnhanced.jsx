@@ -78,6 +78,9 @@ const StudentDashboardEnhanced = ({ onMenuSelect }) => {
       case 'marks':
         onMenuSelect && onMenuSelect('Marks');
         break;
+      case 'hostel':
+        onMenuSelect && onMenuSelect('Hostel');
+        break;
       default:
         break;
     }
